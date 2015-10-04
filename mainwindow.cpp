@@ -46,9 +46,8 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::on_fileSelector_clicked()
-{
-    QString filename = QFileDialog::getOpenFileName(this, tr("Select file"), QDir::homePath());
+void MainWindow::on_fileSelector_clicked() {
+    QString filename = QFileDialog::getOpenFileName(this, tr("Select file"), QDir::homePath(), tr("7z Files (*.7z)"));
     ui->filenameEdit->setText(filename);
 }
 
@@ -68,22 +67,34 @@ void MainWindow::onProgress() {
     ui->progressBar->setValue(value);
 }
 
-void MainWindow::readFinished(int exitCode, QProcess::ExitStatus exitStatus)
-{
+void MainWindow::readFinished(int exitCode, QProcess::ExitStatus exitStatus) {
     qDebug() << exitCode;
     if (exitStatus == QProcess::CrashExit) {
-        ui->textBrowser->setPlainText("----SSD WRITE FAILED----");
+        ui->textBrowser->append("\n\n----SSD WRITE FAILED----");
     } else {
-        ui->textBrowser->setPlainText("----SSD WRITE SUCCESSFULL----");
+        ui->textBrowser->append("\n\n----SSD WRITE SUCCESSFULL----");
     }
     ui->progressBar->setValue(0);
     ui->progressBar->setRange(0, 2147484);
     ui->writeButton->setEnabled(true);
+    m_timer->stop();
 }
 
-void MainWindow::on_writeButton_clicked()
-{
+void MainWindow::onTimeout() {
+    m_time = m_time.addSecs(1);
+    ui->labelTime->setText(m_time.toString("hh:mm:ss"));
+}
+
+void MainWindow::on_writeButton_clicked() {
+    m_timer = new QTimer(this);
+    connect(m_timer, SIGNAL(timeout()), this, SLOT(onTimeout()));
+    m_timer->start(1000);
+
     ui->writeButton->setDisabled(true);
+    m_time = QTime(0,0);
+    ui->labelTime->setText("00:00:00");
+    ui->textBrowser->setPlainText("");
+
     QString dev = ui->comboBox->currentText();
     QString filename = ui->filenameEdit->text();
     qDebug() << dev;
@@ -92,15 +103,12 @@ void MainWindow::on_writeButton_clicked()
     ui->progressBar->setRange(0, 100);
     ui->progressBar->setValue(0);
 
-    QDir dir;
-    qDebug() << dir.absolutePath();
-
     m_reader = new QProcess(this);
 
     connect(m_reader, SIGNAL(readyReadStandardError()), this, SLOT(onProgress()));
     connect(m_reader, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(readFinished(int, QProcess::ExitStatus)));
 
-    m_reader->start(dir.absolutePath() + "/write.sh", QStringList() << filename << "2G" << dev );
+    m_reader->start("bash", QStringList() << "-c" << "7zr x -so " + filename + " | pv -ns 2G | dd of=" + dev + " bs=512 conv=noerror,sync");
 
     // Wait for process to start
     if(!m_reader->waitForStarted()) {

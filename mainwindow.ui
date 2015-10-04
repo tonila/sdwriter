@@ -56,7 +56,7 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Select file:</string>
+         <string>Select 7z file:</string>
         </property>
        </widget>
       </item>
@@ -74,6 +74,30 @@
     </item>
     <item>
      <widget class="QTextBrowser" name="textBrowser"/>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Elapsed:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="labelTime">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>00:00:00</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QProgressBar" name="progressBar">
