@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
         int len = parts.length();
         if (len >= 11) {
             int i = len-3;
-            if (parts[i].contains("usb")) {
+            if (parts[i].contains("usb") || parts[i].contains("mmc")) {
                 QStringList p2 = parts[parts.count() - 1].split("/");
                 QString d = "/dev/" + p2[p2.count() - 1];
                 if (!parts[i].contains("part")) {
